@@ -25,22 +25,21 @@ static char humidityTemp[7];
 String clientId = "5"; // make something up
 
 // delay 20 min
-const unsigned long postingInterval = 20L * 60L * 1000L; // delay between updates, in milliseconds
-
-unsigned long lastConnectionTime = -postingInterval;            // last time you connected to the server, in milliseconds
-
+#define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
+#define TIME_TO_SLEEP  60*20    /* Time ESP32 will go to sleep (in seconds) */
 
 void setup() {
   Serial.begin(115200);
   setupSensor();
   wifiConnect();
+
+  httpRequest();
+  Serial.println("sleeping");
+  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+  esp_deep_sleep_start();
 }
 
-void loop() {
-  if (millis() - lastConnectionTime > postingInterval) {
-    httpRequest();
-  }
-}
+void loop() {}
 
 void setupSensor() {
   dht.begin();
@@ -75,6 +74,8 @@ void fetchDHT() {
   if (isnan(h) || isnan(t) || isnan(f))
   {
     Serial.println("Failed to read from DHT sensor!");
+    delay(1000);
+    fetchDHT();
   }
   else {
     // Computes temperature values in Celsius + Fahrenheit and Humidity
@@ -93,7 +94,8 @@ void httpRequest() {
 
     HTTPClient http;
 
-    http.begin(url, null); //Specify the URL
+    http.begin(url, null); // remove second parameter for http requests
+
     http.addHeader("Content-Type", "application/json");
     JSONVar jsonData;
     jsonData["client_id"] = clientId;
@@ -109,12 +111,9 @@ void httpRequest() {
       String payload = http.getString();
       Serial.println(httpCode);
       Serial.println(payload);
-
-      lastConnectionTime = millis();
     } else {
       Serial.println("Error on HTTP request");
       Serial.println(httpCode);
-      delay(5L * 1000L);
     }
     http.end(); //Free the resources
   }
