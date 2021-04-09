@@ -96,7 +96,7 @@ void httpRequest() {
     http.begin(url, null); //Specify the URL
     http.addHeader("Content-Type", "application/json");
     JSONVar jsonData;
-    jsonData["client_id"] = 5;
+    jsonData["client_id"] = clientId;
 
     String postTemp = String(celsiusTemp);
     postTemp.trim();
