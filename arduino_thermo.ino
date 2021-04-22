@@ -97,6 +97,7 @@ void httpRequest() {
     http.begin(url, null); // remove second parameter for http requests
 
     http.addHeader("Content-Type", "application/json");
+    http.addHeader("secret", SECRET);
     JSONVar jsonData;
     jsonData["client_id"] = clientId;
 
