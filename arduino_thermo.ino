@@ -12,17 +12,15 @@ const char* ssid = SSID;
 const char* password = PASSWORD;
 const char* url = THERMO_URL;
 
-// DHT Sensor
-const int DHTPin = 3;
 // Initialize DHT sensor.
-DHT dht(DHTPin, DHTTYPE);
+DHT dht(DHT_PIN, DHTTYPE);
 
 // Temporary variables
 static char celsiusTemp[7];
 static char fahrenheitTemp[7];
 static char humidityTemp[7];
 
-String clientId = "5"; // make something up
+
 
 // delay 20 min
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
@@ -90,7 +88,6 @@ void fetchDHT() {
 void httpRequest() {
   if ((WiFi.status() == WL_CONNECTED)) { //Check the current connection status
     fetchDHT();
-    //    dtostrf(22.45, 6, 2, celsiusTemp);
 
     HTTPClient http;
 
@@ -99,10 +96,12 @@ void httpRequest() {
     http.addHeader("Content-Type", "application/json");
     http.addHeader("secret", SECRET);
     JSONVar jsonData;
-    jsonData["client_id"] = clientId;
+    jsonData["client_id"] = CLIENT_ID;
 
     String postTemp = String(celsiusTemp);
     postTemp.trim();
+    Serial.println("temp: " + postTemp);
+
     jsonData["data"] = postTemp;
     String jsonString = JSON.stringify(jsonData);
     int httpCode = http.POST(jsonString);   //Make the request
